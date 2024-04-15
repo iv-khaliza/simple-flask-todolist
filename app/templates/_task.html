@@ -1,0 +1,7 @@
+<div class="list-group-item list-group-item-action d-flex justify-content-between" id="{{ t.id }}">
+    <div class="item" {% if t.status %} style="text-decoration-line: line-through" {% endif %}>
+        <b>{{ t.title }}</b>
+        <span style="color: grey">{{ moment(t.due_date).format('ll') }}</span>
+    </div>
+    <button type="button" id="delete_btn" class="btn btn-primary btn-sm bi bi-trash"></button>
+</div>

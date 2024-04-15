@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md">
+                <h1>Hi {{ current_user.username }}</h1>
+                {{ wtf.quick_form(form) }}
+            </div>
+            
+            <div class="col-md">
+                <div class="list-group">
+                    {% for t in tasks %}
+                        {% include '_task.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock%}
+
+{% block script %}
+<script>
+        $(document).ready(function() {
+
+            $('form').submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '/add_task',
+                    data: $('form').serialize(),
+                    dataType: 'JSON',
+                    success: function(data) {
+                         $('.list-group').append("<div class='list-group-item list-group-item-action d-flex justify-content-between' id='" + data.id + "'><div class='item' " + ( data.status ? "style='text-decoration-line: line-through'" : '') + "><b>" + data.title + "</b><span style='color: grey'> " + moment(data.due_date).format('ll') + "</span></div><button type='button' id='delete_btn' class='btn btn-primary btn-sm bi bi-trash'></button></div>");
+                    },
+                    statusCode: { 400: function() { alert('Invalid Fort') }}
+                });
+            });
+
+        });
+
+
+
+        $(document).on('click', '#delete_btn', function() {
+            var name = $(this).parent().attr('id');
+            $.post('/delete', {'name': name});
+            $(this).parent().remove()
+        });
+
+        $(document).on('click', '.item', function() {
+
+            if ( $(this).css("text-decoration-line") == "none") {
+                $.ajax({
+                    type: 'POST',
+                    url: '/check_status',
+                    data: { id: $(this).parent().attr('id'), status: '1' },
+                    dataType: 'text',
+                    success: function(data) {
+
+                        }
+                });
+
+                $(this).css("text-decoration-line", "line-through");
+
+            } else {
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/check_status',
+                    data: { id: $(this).parent().attr('id'), status: '0' },
+                    dataType: 'text',
+                    success: function(data) {
+
+                        }
+                });
+
+                $(this).css("text-decoration-line", "none");
+
+            }
+
+
+        });
+
+        $(document).on('click', '.dropdown-item', function() {
+            var name = $(this).attr('id');
+            $.post('/category', {'name': $(this).text()}, function(data) {
+                $('.list-group').html(data)
+            });
+
+        });
+
+
+    </script>
+{% endblock %}
